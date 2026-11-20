@@ -150,7 +150,7 @@
      * @return {string}
      */
     token: function () {
-      var fromTab = storageGet('sessionStorage', TOKEN_KEY);
+      var fromTab = storageGet('localStorage', TOKEN_KEY);
       if (fromTab) return fromTab;
       var fromCookie = cookieGet(COOKIE_NAME);
       return fromCookie || '';
@@ -158,7 +158,9 @@
 
     /**
      * Persist a token. Remember-me tokens live in a Secure, SameSite=Lax
-     * cookie; normal tokens live only for the tab session.
+     * cookie (survives browser restart); normal tokens live in localStorage
+     * (shared across all tabs of the same origin, cleared when the domain's
+     * data is cleared or the user signs out).
      * @param {string} token
      * @param {boolean} remember
      */
@@ -169,15 +171,15 @@
       }
       if (remember) {
         cookieSet(COOKIE_NAME, token, 30 * 24 * 60 * 60);
-        storageRemove('sessionStorage', TOKEN_KEY);
+        storageRemove('localStorage', TOKEN_KEY);
       } else {
-        storageSet('sessionStorage', TOKEN_KEY, token);
+        storageSet('localStorage', TOKEN_KEY, token);
         cookieRemove(COOKIE_NAME);
       }
     },
 
     clearToken: function () {
-      storageRemove('sessionStorage', TOKEN_KEY);
+      storageRemove('localStorage', TOKEN_KEY);
       cookieRemove(COOKIE_NAME);
     },
 
@@ -187,7 +189,7 @@
      * @return {Object|null}
      */
     cachedUser: function () {
-      var raw = storageGet('sessionStorage', USER_KEY);
+      var raw = storageGet('localStorage', USER_KEY);
       if (!raw) return null;
       try {
         return JSON.parse(raw);
@@ -198,10 +200,10 @@
 
     setCachedUser: function (user) {
       if (!user) {
-        storageRemove('sessionStorage', USER_KEY);
+        storageRemove('localStorage', USER_KEY);
         return;
       }
-      storageSet('sessionStorage', USER_KEY, JSON.stringify({
+      storageSet('localStorage', USER_KEY, JSON.stringify({
         userId: user.userId || '',
         fullName: user.fullName || '',
         initials: user.initials || '',
