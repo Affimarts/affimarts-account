@@ -493,7 +493,10 @@
   }
 
   function openPanel(options) {
-    if (!panel) return;
+    if (!panel) {
+      if (window.console && console.warn) console.warn('[AFM] openPanel called but panel is not built.');
+      return;
+    }
     options = options || {};
 
     var view = options.view || (AFM.auth.user ? 'menu' : 'login');
@@ -795,15 +798,20 @@
     if ($('[data-afm-account]') || $('[data-afm-account-btn]')) return;
 
     var actions = document.querySelector('.ah-actions');
-    if (!actions) return;
-
     var root = document.createElement('div');
     root.className = 'afm-account';
     root.setAttribute('data-afm-account', '');
     root.innerHTML = buttonMarkup();
 
-    var burger = actions.querySelector('.ah-burger');
-    actions.insertBefore(root, burger || null);
+    if (actions) {
+      var burger = actions.querySelector('.ah-burger');
+      actions.insertBefore(root, burger || null);
+    } else {
+      /* Fallback: inject into the page header or body so the button exists
+         on pages that don't use the mega menu (e.g. Party Collection PLP). */
+      var header = document.querySelector('header') || document.querySelector('.ah-header') || document.body;
+      header.insertAdjacentElement('afterbegin', root);
+    }
   }
 
   function bindHeader() {
@@ -1145,41 +1153,73 @@
       /* ignore */
     }
 
-    ensureButton();
-    buildPanel();
-    setAccountLink();
+    try {
+      ensureButton();
+      buildPanel();
+      setAccountLink();
+    } catch (err) {
+      if (window.console && console.error) console.error('[AFM] boot setup error:', err);
+    }
 
     var setup = document.getElementById('afm-setup');
     if (setup && !AFM.api.isConfigured()) setup.hidden = false;
 
-    AFM.auth.init();
-    AFM.profile.init();
-    AFM.favorites.init();
+    try {
+      AFM.auth.init();
+      AFM.profile.init();
+      AFM.favorites.init();
+    } catch (err) {
+      if (window.console && console.error) console.error('[AFM] module init error:', err);
+    }
 
-    bindHeader();
-    bindPanel();
-    bindDashboard();
-    bindEvents();
+    try {
+      bindHeader();
+      bindPanel();
+      bindDashboard();
+      bindEvents();
+    } catch (err) {
+      if (window.console && console.error) console.error('[AFM] binding error:', err);
+    }
 
-    paintHeader();
+    try {
+      paintHeader();
+    } catch (err) {
+      if (window.console && console.error) console.error('[AFM] paintHeader error:', err);
+    }
 
     /* Cached paint keeps the header stable while the server validates. */
     if (AFM.session.hasToken() && !AFM.auth.user) {
-      var cached = AFM.session.cachedUser();
-      if (cached) {
-        paintHeader();
-        AFM.profile.setVisible(cached);
+      try {
+        var cached = AFM.session.cachedUser();
+        if (cached) {
+          paintHeader();
+          AFM.profile.setVisible(cached);
+        }
+      } catch (err) {
+        /* ignore */
       }
     }
 
-    AFM.auth.restore().then(function () {
-      refreshHeader();
-      AFM.profile.render();
-      handleQuery();
-      handleHash();
-    });
+    try {
+      AFM.auth.restore().then(function () {
+        try {
+          refreshHeader();
+          AFM.profile.render();
+          handleQuery();
+          handleHash();
+        } catch (err) {
+          if (window.console && console.error) console.error('[AFM] restore callback error:', err);
+        }
+      });
+    } catch (err) {
+      if (window.console && console.error) console.error('[AFM] auth.restore error:', err);
+    }
 
-    scheduleAutoPopup();
+    try {
+      scheduleAutoPopup();
+    } catch (err) {
+      if (window.console && console.error) console.error('[AFM] scheduleAutoPopup error:', err);
+    }
   }
 
   if (document.readyState === 'loading') {
