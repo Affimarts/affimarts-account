@@ -316,6 +316,7 @@
 
       button.addEventListener('click', function (event) {
         event.preventDefault();
+        event.stopPropagation();
         var title = button.getAttribute('data-afm-title') || '';
         var url = button.getAttribute('data-afm-url') || '';
         var image = button.getAttribute('data-afm-image') || '';
