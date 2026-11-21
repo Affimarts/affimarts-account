@@ -59,10 +59,11 @@
   gap: 10px;
   flex-shrink: 0;
   white-space: nowrap;
-  padding: 14px 20px;
-  background: var(--afm-wine);
-  color: #fff;
+  padding: 10px 14px;
+  background: transparent;
+  color: maroon;
   border: 1px solid var(--afm-wine);
+  border-radius: 26px;
   font-family: var(--afm-sans);
   font-size: 10px;
   font-weight: 700;
@@ -90,9 +91,9 @@
 
 .afm-account__btn:hover,
 .afm-account__btn:focus-visible {
-  background: var(--afm-wine-deep);
+  background: transparent;
   border-color: var(--afm-wine-deep);
-  color: #fff;
+  color: maroon;
 }
 
 .afm-account__btn:hover::before,
@@ -2002,7 +2003,7 @@ body.afm-lock {
 /* Touch friendliness */
 @media (hover: none) {
   .afm-account__btn:hover {
-    background: var(--afm-wine);
+    background: transparent;
     border-color: var(--afm-wine);
   }
 
